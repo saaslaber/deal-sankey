@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deal Pipeline Sankey</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0f1117;
+    color: #e4e6eb;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .dashboard-header p {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 300;
+  }
+
+  .dashboard-header .updated {
+    font-size: 12px;
+    color: #4b5060;
+    margin-top: 4px;
+  }
+
+  .sankey-container {
+    width: 100%;
+    max-width: 960px;
+    background: #181a20;
+    border-radius: 16px;
+    border: 1px solid #2a2d36;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sankey-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
+  }
+
+  svg { width: 100%; height: auto; display: block; }
+
+  .kpi-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    max-width: 960px;
+    margin-top: 24px;
+  }
+
+  .kpi-card {
+    flex: 1;
+    background: #181a20;
+    border: 1px solid #2a2d36;
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .kpi-card:hover { border-color: #3b3f4a; }
+
+  .kpi-card .accent-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .kpi-card .label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
+  .kpi-card .value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .kpi-card .sub {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .tooltip {
+    position: fixed;
+    background: #1e2028;
+    border: 1px solid #3b3f4a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e4e6eb;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .tooltip.visible { opacity: 1; }
+  .tooltip .tt-label { font-weight: 700; margin-bottom: 4px; }
+  .tooltip .tt-value { color: #9ca3af; font-weight: 300; }
+
+  .legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .flow-path { transition: opacity 0.2s; cursor: pointer; }
+  .flow-path:hover { opacity: 1 !important; }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #6b7280;
+    font-size: 15px;
+  }
+
+  .loading .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #2a2d36;
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    text-align: center;
+    color: #f97316;
+    padding: 40px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="dashboard-header">
+  <h1>Deal Pipeline Flow</h1>
+  <p>S1 → S2 Qualification → Outcome</p>
+  <div class="updated" id="lastUpdated"></div>
+</div>
+
+<div class="sankey-container">
+  <div class="loading" id="loadingState">
+    <div class="spinner"></div>
+    Fetching latest data from Google Sheets...
+  </div>
+  <svg id="sankey" viewBox="0 0 900 420" style="display:none"></svg>
+</div>
+
+<div class="legend" id="legend" style="display:none">
+  <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>S1 → S2 (Qualified)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Closed Lost</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Closed Won</div>
+</div>
+
+<div class="kpi-row" id="kpis"></div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-label"></div>
+  <div class="tt-value"></div>
+</div>
+
+<script>
+// ===============================================
+// 🔧 PASTE YOUR PUBLISHED GOOGLE SHEET CSV URL HERE
+// ===============================================
+// HOW TO GET THIS URL:
+//   1. Open your Google Sheet
+//   2. File → Share → Publish to web
+//   3. In the dropdown, select "Sankey Data" sheet
+//   4. Change format to "CSV"
+//   5. Click "Publish" → copy the URL
+//   It will look like:
+//   https://docs.google.com/spreadsheets/d/e/XXXXX/pub?gid=YYYYY&single=true&output=csv
+// ===============================================
+const SHEET_CSV_URL = "PASTE_YOUR_PUBLISHED_CSV_URL_HERE";
+// ===============================================
+
+
+// =====================
+// DATA FETCHING
+// =====================
+async function fetchSankeyData() {
+  const response = await fetch(SHEET_CSV_URL);
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  const csvText = await response.text();
+  return parseCSV(csvText);
+}
+
+function parseCSV(csvText) {
+  const lines = csvText.trim().split("\n").map(l =>
+    l.split(",").map(c => c.trim().replace(/^"|"$/g, ''))
+  );
+
+  const data = { s1_to_closedLost: 0, s1_to_s2: 0, s2_to_closedWon: 0, s2_to_closedLost: 0 };
+
+  for (let i = 1; i < lines.length; i++) {
+    const row = lines[i];
+    if (row.length < 3) continue;
+
+    const source = row[0].toLowerCase();
+    const target = row[1].toLowerCase();
+    const count = parseInt(row[2], 10) || 0;
+
+    // Stop before hitting summary rows
+    if (source.includes("summary") || source === "") break;
+
+    if (source.includes("s1") && target.includes("closed lost"))      data.s1_to_closedLost = count;
+    else if (source.includes("s1") && target.includes("s2"))          data.s1_to_s2 = count;
+    else if (source.includes("s2") && target.includes("closed won"))  data.s2_to_closedWon = count;
+    else if (source.includes("s2") && target.includes("closed lost")) data.s2_to_closedLost = count;
+  }
+
+  return data;
+}
+
+
+// =====================
+// SVG HELPERS
+// =====================
+const C = {
+  s1: '#6366f1', s2: '#8b5cf6', won: '#22c55e', lost: '#f97316', lostDirect: '#ef4444',
+  flowS1S2: 'rgba(99, 102, 241, 0.25)', flowS1Lost: 'rgba(239, 68, 68, 0.25)',
+  flowS2Won: 'rgba(34, 197, 94, 0.25)', flowS2Lost: 'rgba(249, 115, 22, 0.25)',
+};
+
+const W = 900, H = 420, nodeW = 28, pad = 60;
+
+function el(tag, attrs = {}) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+function cubicFlow(x0, y0top, y0bot, x1, y1top, y1bot, fill, hLabel, hValue) {
+  const mx = (x0 + x1) / 2;
+  const d = `M${x0},${y0top} C${mx},${y0top} ${mx},${y1top} ${x1},${y1top} L${x1},${y1bot} C${mx},${y1bot} ${mx},${y0bot} ${x0},${y0bot} Z`;
+  const path = el('path', { d, fill, class: 'flow-path', opacity: '0.7' });
+  path.addEventListener('mouseenter', e => { path.setAttribute('opacity', '0.95'); showTooltip(e, hLabel, hValue); });
+  path.addEventListener('mousemove', e => moveTooltip(e));
+  path.addEventListener('mouseleave', () => { path.setAttribute('opacity', '0.7'); hideTooltip(); });
+  return path;
+}
+
+function drawNode(node) {
+  const g = el('g');
+  const midX = W / 2 - nodeW / 2;
+
+  g.appendChild(el('rect', { x: node.x - 3, y: node.y - 3, width: nodeW + 6, height: node.h + 6, rx: 6, fill: node.color, opacity: 0.15, filter: 'url(#blur)' }));
+  g.appendChild(el('rect', { x: node.x, y: node.y, width: nodeW, height: node.h, rx: 4, fill: node.color }));
+
+  const isRight = node.x > W / 2;
+  const isCenter = Math.abs(node.x - midX) < 10;
+  const labelX = isCenter ? node.x + nodeW + 14 : isRight ? node.x + nodeW + 14 : node.x - 14;
+  const anchor = isRight || isCenter ? 'start' : 'end';
+  const labelY = node.y + node.h / 2;
+
+  const t1 = el('text', { x: labelX, y: labelY - 8, 'text-anchor': anchor, fill: '#e4e6eb', 'font-size': '14', 'font-weight': '600', 'font-family': 'DM Sans, sans-serif' });
+  t1.textContent = node.label;
+  g.appendChild(t1);
+
+  const t2 = el('text', { x: labelX, y: labelY + 12, 'text-anchor': anchor, fill: '#6b7280', 'font-size': '13', 'font-weight': '300', 'font-family': 'DM Sans, sans-serif' });
+  t2.textContent = node.count.toLocaleString() + ' deals';
+  g.appendChild(t2);
+
+  return g;
+}
+
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, l, v) { tooltip.querySelector('.tt-label').textContent = l; tooltip.querySelector('.tt-value').textContent = v; tooltip.classList.add('visible'); moveTooltip(e); }
+function moveTooltip(e) { tooltip.style.left = (e.clientX + 16) + 'px'; tooltip.style.top = (e.clientY - 10) + 'px'; }
+function hideTooltip() { tooltip.classList.remove('visible'); }
+
+
+// =====================
+// MAIN RENDER
+// =====================
+function renderSankey(DATA) {
+  const svg = document.getElementById('sankey');
+  svg.innerHTML = '';
+
+  const TOTAL = DATA.s1_to_closedLost + DATA.s1_to_s2;
+  const s2Ratio = DATA.s1_to_s2 / TOTAL;
+  const lostDirectRatio = DATA.s1_to_closedLost / TOTAL;
+  const midX = W / 2 - nodeW / 2;
+  const rightX = W - pad - nodeW;
+
+  const s1 = { x: pad, y: 20, h: H - 40, label: 'S1 (All Deals)', color: C.s1, count: TOTAL };
+  const s2H = (H - 80) * s2Ratio;
+  const s2 = { x: midX, y: H - 20 - s2H, h: s2H, label: 'S2 (Qualified)', color: C.s2, count: DATA.s1_to_s2 };
+
+  const clDirectH = Math.max((H - 100) * lostDirectRatio, 18);
+  const s2OutcomeH = H - 60 - clDirectH - 20;
+  const wonRatio = DATA.s2_to_closedWon / (DATA.s1_to_s2 || 1);
+  const lostFromS2Ratio = DATA.s2_to_closedLost / (DATA.s1_to_s2 || 1);
+
+  const clDirect = { x: rightX, y: 20, h: clDirectH, label: 'Closed Lost (Direct)', color: C.lostDirect, count: DATA.s1_to_closedLost };
+  const clS2H = s2OutcomeH * lostFromS2Ratio;
+  const cwH = s2OutcomeH * wonRatio;
+  const clS2 = { x: rightX, y: clDirect.y + clDirectH + 16, h: clS2H, label: 'Closed Lost', color: C.lost, count: DATA.s2_to_closedLost };
+  const cw = { x: rightX, y: clS2.y + clS2H + 16, h: cwH, label: 'Closed Won', color: C.won, count: DATA.s2_to_closedWon };
+
+  // Defs
+  const defs = el('defs');
+  const blur = el('filter', { id: 'blur' });
+  blur.appendChild(el('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: '6' }));
+  defs.appendChild(blur);
+  svg.appendChild(defs);
+
+  // Flows
+  const s1LostBot = s1.y + s1.h * lostDirectRatio;
+  svg.appendChild(cubicFlow(s1.x + nodeW, s1.y, s1LostBot, clDirect.x, clDirect.y, clDirect.y + clDirect.h, C.flowS1Lost, 'S1 → Closed Lost (Direct)', DATA.s1_to_closedLost + ' deals (' + (lostDirectRatio * 100).toFixed(1) + '%)'));
+  svg.appendChild(cubicFlow(s1.x + nodeW, s1LostBot, s1.y + s1.h, s2.x, s2.y, s2.y + s2.h, C.flowS1S2, 'S1 → S2 (Qualified)', DATA.s1_to_s2 + ' deals (' + (s2Ratio * 100).toFixed(1) + '%)'));
+
+  const s2SplitY = s2.y + s2.h * lostFromS2Ratio;
+  svg.appendChild(cubicFlow(s2.x + nodeW, s2.y, s2SplitY, clS2.x, clS2.y, clS2.y + clS2.h, C.flowS2Lost, 'S2 → Closed Lost', DATA.s2_to_closedLost + ' deals (' + (lostFromS2Ratio * 100).toFixed(1) + '% of S2)'));
+  svg.appendChild(cubicFlow(s2.x + nodeW, s2SplitY, s2.y + s2.h, cw.x, cw.y, cw.y + cw.h, C.flowS2Won, 'S2 → Closed Won', DATA.s2_to_closedWon + ' deals (' + (wonRatio * 100).toFixed(1) + '% of S2)'));
+
+  // Nodes
+  [s1, s2, clDirect, clS2, cw].forEach(n => svg.appendChild(drawNode(n)));
+
+  // KPIs
+  const kpiRow = document.getElementById('kpis');
+  kpiRow.innerHTML = '';
+  [
+    { label: 'Total S1 Deals', value: TOTAL, sub: '100% of pipeline', color: C.s1 },
+    { label: 'Qualified (S2)', value: DATA.s1_to_s2, sub: (s2Ratio * 100).toFixed(1) + '% qualification rate', color: C.s2 },
+    { label: 'Closed Won', value: DATA.s2_to_closedWon, sub: (wonRatio * 100).toFixed(1) + '% win rate (of S2)', color: C.won },
+    { label: 'Total Lost', value: DATA.s1_to_closedLost + DATA.s2_to_closedLost, sub: 'Direct + from S2', color: C.lost },
+  ].forEach(k => {
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.innerHTML = `<div class="accent-bar" style="background:${k.color}"></div><div class="label">${k.label}</div><div class="value">${k.value.toLocaleString()}</div><div class="sub">${k.sub}</div>`;
+    kpiRow.appendChild(card);
+  });
+}
+
+
+// =====================
+// INIT
+// =====================
+(async function init() {
+  const loadingEl = document.getElementById('loadingState');
+  const svgEl = document.getElementById('sankey');
+  const legendEl = document.getElementById('legend');
+
+  try {
+    const data = await fetchSankeyData();
+    if ((data.s1_to_closedLost + data.s1_to_s2) === 0) throw new Error("No deal data found");
+
+    loadingEl.style.display = 'none';
+    svgEl.style.display = 'block';
+    legendEl.style.display = 'flex';
+    renderSankey(data);
+    document.getElementById('lastUpdated').textContent = 'Live from Google Sheets · loaded ' + new Date().toLocaleString();
+
+  } catch (err) {
+    loadingEl.innerHTML = `<div class="error-msg">
+      <p>⚠️ Could not load data from Google Sheets.</p>
+      <p style="margin-top:8px;font-size:12px;color:#6b7280">
+        Make sure you've published the "Sankey Data" sheet as CSV<br>
+        and pasted the URL in the SHEET_CSV_URL variable.
+      </p>
+    </div>`;
+    console.error("Sankey init error:", err);
+  }
+})();
+</script>
+</body>
+</html>

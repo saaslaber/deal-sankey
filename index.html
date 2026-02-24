@@ -25,72 +25,64 @@
     margin-bottom: 24px;
   }
 
-  .dashboard-header h1 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: #fff;
-    margin-bottom: 6px;
-  }
+  .dashboard-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: #fff; margin-bottom: 6px; }
+  .dashboard-header p { font-size: 14px; color: #6b7280; font-weight: 300; }
+  .dashboard-header .updated { font-size: 12px; color: #4b5060; margin-top: 4px; }
 
-  .dashboard-header p {
-    font-size: 14px;
-    color: #6b7280;
-    font-weight: 300;
-  }
-
-  .dashboard-header .updated {
-    font-size: 12px;
-    color: #4b5060;
-    margin-top: 4px;
-  }
-
-  /* Owner dropdown */
+  /* Filters */
   .filter-bar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 24px;
     margin-bottom: 28px;
     width: 100%;
     max-width: 1060px;
+    flex-wrap: wrap;
   }
 
-  .filter-bar label {
-    font-size: 13px;
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .filter-group label {
+    font-size: 12px;
     color: #6b7280;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.6px;
+    white-space: nowrap;
   }
 
-  .filter-bar select {
+  .filter-group select {
     background: #181a20;
     color: #e4e6eb;
     border: 1px solid #2a2d36;
     border-radius: 8px;
-    padding: 10px 16px;
+    padding: 10px 36px 10px 14px;
     font-size: 14px;
     font-family: 'DM Sans', sans-serif;
     cursor: pointer;
-    min-width: 260px;
+    min-width: 200px;
     transition: border-color 0.2s;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%236b7280'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
-    padding-right: 36px;
   }
 
-  .filter-bar select:hover { border-color: #6366f1; }
-  .filter-bar select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
+  .filter-group select:hover { border-color: #6366f1; }
+  .filter-group select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.2); }
 
-  .owner-badge {
+  .deal-badge {
     font-size: 13px;
     color: #9ca3af;
     background: #1e2028;
     border: 1px solid #2a2d36;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 6px;
+    margin-left: auto;
   }
 
   /* Sankey */
@@ -115,13 +107,7 @@
 
   svg { width: 100%; height: auto; display: block; overflow: visible; }
 
-  .kpi-row {
-    display: flex;
-    gap: 16px;
-    width: 100%;
-    max-width: 1060px;
-    margin-top: 24px;
-  }
+  .kpi-row { display: flex; gap: 16px; width: 100%; max-width: 1060px; margin-top: 24px; }
 
   .kpi-card {
     flex: 1;
@@ -136,35 +122,10 @@
 
   .kpi-card:hover { border-color: #3b3f4a; }
 
-  .kpi-card .accent-bar {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 12px 12px 0 0;
-  }
-
-  .kpi-card .label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 8px;
-  }
-
-  .kpi-card .value {
-    font-size: 32px;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1;
-  }
-
-  .kpi-card .sub {
-    font-size: 13px;
-    color: #6b7280;
-    margin-top: 6px;
-    font-weight: 300;
-  }
+  .kpi-card .accent-bar { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+  .kpi-card .label { font-size: 12px; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .kpi-card .value { font-size: 32px; font-weight: 700; color: #fff; line-height: 1; }
+  .kpi-card .sub { font-size: 13px; color: #6b7280; margin-top: 6px; font-weight: 300; }
 
   .tooltip {
     position: fixed;
@@ -179,69 +140,32 @@
     transition: opacity 0.15s;
     z-index: 100;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    max-width: 260px;
+    max-width: 280px;
   }
 
   .tooltip.visible { opacity: 1; }
   .tooltip .tt-label { font-weight: 700; margin-bottom: 4px; }
   .tooltip .tt-value { color: #9ca3af; font-weight: 300; }
 
-  .legend {
-    display: flex;
-    gap: 24px;
-    justify-content: center;
-    margin-top: 20px;
-    width: 100%;
-    max-width: 1060px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: #6b7280;
-  }
-
+  .legend { display: flex; gap: 24px; justify-content: center; margin-top: 20px; width: 100%; max-width: 1060px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; }
   .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
   .flow-path { transition: opacity 0.2s; cursor: pointer; }
   .flow-path:hover { opacity: 1 !important; }
 
-  .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    color: #6b7280;
-    font-size: 15px;
-  }
+  .loading { display: flex; align-items: center; justify-content: center; height: 300px; color: #6b7280; font-size: 15px; }
 
   .loading .spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #2a2d36;
-    border-top-color: #6366f1;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 12px;
+    width: 20px; height: 20px;
+    border: 2px solid #2a2d36; border-top-color: #6366f1;
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 12px;
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .error-msg {
-    text-align: center;
-    color: #f97316;
-    padding: 40px;
-    font-size: 14px;
-  }
-
-  .no-data-msg {
-    text-align: center;
-    color: #6b7280;
-    padding: 80px 40px;
-    font-size: 16px;
-  }
+  .error-msg { text-align: center; color: #f97316; padding: 40px; font-size: 14px; }
+  .no-data-msg { text-align: center; color: #6b7280; padding: 80px 40px; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -253,11 +177,21 @@
 </div>
 
 <div class="filter-bar">
-  <label>Deal Owner</label>
-  <select id="ownerSelect">
-    <option value="_all">All Owners</option>
-  </select>
-  <span class="owner-badge" id="dealCount"></span>
+  <div class="filter-group">
+    <label>Period</label>
+    <select id="periodSelect">
+      <option value="this_quarter">This Quarter</option>
+      <option value="this_month">This Month</option>
+      <option value="last_month">Last Month</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Deal Owner</label>
+    <select id="ownerSelect">
+      <option value="_all">All Owners</option>
+    </select>
+  </div>
+  <span class="deal-badge" id="dealCount"></span>
 </div>
 
 <div class="sankey-container">
@@ -285,53 +219,49 @@
 // ===============================================
 // 🔧 PASTE YOUR PUBLISHED CSV URL FOR "Sankey By Owner" SHEET
 // ===============================================
-// Steps:
-//   1. File → Share → Publish to web
-//   2. Select "Sankey By Owner" sheet → CSV
-//   3. Publish → paste the URL below
-// ===============================================
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=283308049&single=true&output=csv";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pubhtml";
 // ===============================================
 
 
 // =====================
-// DATA
+// DATA — { period: { owner: { s1_to_cl, s1_to_s2, s2_to_cw, s2_to_cl } } }
 // =====================
-let ALL_DATA = {};  // { ownerName: { s1_to_cl, s1_to_s2, s2_to_cw, s2_to_cl } }
+let ALL_DATA = {};
 
 async function fetchData() {
   const res = await fetch(SHEET_CSV_URL);
   if (!res.ok) throw new Error("HTTP " + res.status);
-  const text = await res.text();
-  return parseCSV(text);
+  return parseCSV(await res.text());
 }
 
-function parseCSV(csvText) {
-  const lines = csvText.trim().split("\n").map(l =>
+function parseCSV(csv) {
+  const lines = csv.trim().split("\n").map(l =>
     l.split(",").map(c => c.trim().replace(/^"|"$/g, ''))
   );
 
+  // Header: Period, Owner, Source, Target, Count
   const data = {};
 
   for (let i = 1; i < lines.length; i++) {
-    const row = lines[i];
-    if (row.length < 4) continue;
+    const r = lines[i];
+    if (r.length < 5) continue;
 
-    const owner = row[0].trim();
-    const source = row[1].toLowerCase();
-    const target = row[2].toLowerCase();
-    const count = parseInt(row[3], 10) || 0;
+    const period = r[0].trim();
+    const owner = r[1].trim();
+    const source = r[2].toLowerCase();
+    const target = r[3].toLowerCase();
+    const count = parseInt(r[4], 10) || 0;
 
-    if (!owner) continue;
+    if (!period || !owner) continue;
 
-    if (!data[owner]) {
-      data[owner] = { s1_to_cl: 0, s1_to_s2: 0, s2_to_cw: 0, s2_to_cl: 0 };
-    }
+    if (!data[period]) data[period] = {};
+    if (!data[period][owner]) data[period][owner] = { s1_to_cl: 0, s1_to_s2: 0, s2_to_cw: 0, s2_to_cl: 0 };
 
-    if (source.includes("s1") && target.includes("closed lost"))        data[owner].s1_to_cl = count;
-    else if (source.includes("s1") && target.includes("s2"))            data[owner].s1_to_s2 = count;
-    else if (source.includes("s2") && target.includes("closed won"))    data[owner].s2_to_cw = count;
-    else if (source.includes("s2") && target.includes("closed lost"))   data[owner].s2_to_cl = count;
+    const d = data[period][owner];
+    if (source.includes("s1") && target.includes("closed lost"))        d.s1_to_cl = count;
+    else if (source.includes("s1") && target.includes("s2"))            d.s1_to_s2 = count;
+    else if (source.includes("s2") && target.includes("closed won"))    d.s2_to_cw = count;
+    else if (source.includes("s2") && target.includes("closed lost"))   d.s2_to_cl = count;
   }
 
   return data;
@@ -339,18 +269,15 @@ function parseCSV(csvText) {
 
 
 // =====================
-// SVG
+// SVG ENGINE
 // =====================
 const COL = {
   s1: '#6366f1', s2: '#8b5cf6', won: '#22c55e', lost: '#f97316',
-  flowS1S2: 'rgba(99, 102, 241, 0.28)',
-  flowS1Lost: 'rgba(249, 115, 22, 0.22)',
-  flowS2Won: 'rgba(34, 197, 94, 0.28)',
-  flowS2Lost: 'rgba(249, 115, 22, 0.22)',
+  flowS1S2: 'rgba(99, 102, 241, 0.28)', flowS1Lost: 'rgba(249, 115, 22, 0.22)',
+  flowS2Won: 'rgba(34, 197, 94, 0.28)', flowS2Lost: 'rgba(249, 115, 22, 0.22)',
 };
 
-const W = 1060, H = 440, nodeW = 28;
-const padL = 160, padR = 160;  // Extra padding for labels
+const W = 1060, H = 440, nodeW = 28, padL = 160, padR = 160;
 
 function el(tag, attrs = {}) {
   const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -372,27 +299,13 @@ function drawNode(node) {
   const g = el('g');
   const midX = (padL + (W - padR - nodeW)) / 2;
 
-  // Glow
   g.appendChild(el('rect', { x: node.x - 4, y: node.y - 4, width: nodeW + 8, height: node.h + 8, rx: 8, fill: node.color, opacity: 0.12, filter: 'url(#glow)' }));
-  // Bar
   g.appendChild(el('rect', { x: node.x, y: node.y, width: nodeW, height: node.h, rx: 4, fill: node.color }));
 
-  // Label positioning
   const isRight = node.x > W / 2;
   const isCenter = Math.abs(node.x - midX) < 60;
-  let labelX, anchor;
-
-  if (isCenter) {
-    labelX = node.x + nodeW + 16;
-    anchor = 'start';
-  } else if (isRight) {
-    labelX = node.x + nodeW + 16;
-    anchor = 'start';
-  } else {
-    labelX = node.x - 16;
-    anchor = 'end';
-  }
-
+  const labelX = (isCenter || isRight) ? node.x + nodeW + 16 : node.x - 16;
+  const anchor = (isCenter || isRight) ? 'start' : 'end';
   const labelY = node.y + node.h / 2;
 
   const t1 = el('text', { x: labelX, y: labelY - 10, 'text-anchor': anchor, fill: '#e4e6eb', 'font-size': '15', 'font-weight': '700', 'font-family': 'DM Sans, sans-serif' });
@@ -406,7 +319,6 @@ function drawNode(node) {
   return g;
 }
 
-// Tooltip
 const ttEl = document.getElementById('tooltip');
 function showTT(e, l, v) { ttEl.querySelector('.tt-label').textContent = l; ttEl.querySelector('.tt-value').textContent = v; ttEl.classList.add('visible'); moveTT(e); }
 function moveTT(e) { ttEl.style.left = (e.clientX + 16) + 'px'; ttEl.style.top = (e.clientY - 10) + 'px'; }
@@ -414,7 +326,7 @@ function hideTT() { ttEl.classList.remove('visible'); }
 
 
 // =====================
-// RENDER SANKEY
+// RENDER
 // =====================
 function renderSankey(d) {
   const svg = document.getElementById('sankey');
@@ -422,23 +334,18 @@ function renderSankey(d) {
 
   const TOTAL = d.s1_to_cl + d.s1_to_s2;
 
+  // Handle no-data
+  const container = document.querySelector('.sankey-container');
+  let noData = container.querySelector('.no-data-msg');
   if (TOTAL === 0) {
     svg.style.display = 'none';
     document.getElementById('kpis').innerHTML = '';
-    const container = document.querySelector('.sankey-container');
-    let noData = container.querySelector('.no-data-msg');
-    if (!noData) {
-      noData = document.createElement('div');
-      noData.className = 'no-data-msg';
-      container.appendChild(noData);
-    }
-    noData.textContent = 'No deals found for this owner.';
+    if (!noData) { noData = document.createElement('div'); noData.className = 'no-data-msg'; container.appendChild(noData); }
+    noData.textContent = 'No deals found for this selection.';
     noData.style.display = 'block';
+    document.getElementById('dealCount').textContent = '0 deals';
     return;
   }
-
-  // Hide no-data message if present
-  const noData = document.querySelector('.no-data-msg');
   if (noData) noData.style.display = 'none';
   svg.style.display = 'block';
 
@@ -448,85 +355,47 @@ function renderSankey(d) {
   const wonRatio = d.s2_to_cw / (d.s1_to_s2 || 1);
   const lostFromS2Ratio = d.s2_to_cl / (d.s1_to_s2 || 1);
 
-  const leftX = padL;
-  const midX = W / 2 - nodeW / 2;
-  const rightX = W - padR - nodeW;
-  const topY = 30;
-  const botY = H - 30;
-  const usableH = botY - topY;
+  const leftX = padL, midX = W / 2 - nodeW / 2, rightX = W - padR - nodeW;
+  const topY = 30, botY = H - 30, usableH = botY - topY;
 
-  // S1 — full height on the left
   const s1 = { x: leftX, y: topY, h: usableH, label: 'S1 (All Deals)', color: COL.s1, count: TOTAL };
-
-  // S2 — middle, proportional height
   const s2H = usableH * s2Ratio;
   const s2 = { x: midX, y: botY - s2H, h: s2H, label: 'S2 (Qualified)', color: COL.s2, count: d.s1_to_s2 };
 
-  // RIGHT: Closed Lost (single merged node, top) + Closed Won (bottom)
-  const clRatio = totalCL / TOTAL;
-  const cwRatio = d.s2_to_cw / TOTAL;
-  const gap = 24;
+  const clRatio = totalCL / TOTAL, cwRatio = d.s2_to_cw / TOTAL, gap = 24;
   const clH = Math.max(usableH * (clRatio / (clRatio + cwRatio + 0.05)), 24);
   const cwH = Math.max(usableH - clH - gap, 24);
 
   const closedLost = { x: rightX, y: topY, h: clH, label: 'Closed Lost', color: COL.lost, count: totalCL };
   const closedWon = { x: rightX, y: topY + clH + gap, h: cwH, label: 'Closed Won', color: COL.won, count: d.s2_to_cw };
 
-  // -- DEFS --
+  // Defs
   const defs = el('defs');
   const blur = el('filter', { id: 'glow' });
   blur.appendChild(el('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: '8' }));
   defs.appendChild(blur);
   svg.appendChild(defs);
 
-  // -- FLOWS --
-
-  // S1 → Closed Lost (direct) — top portion of S1 → top portion of Closed Lost
-  const s1_cl_top = s1.y;
+  // Flows
   const s1_cl_bot = s1.y + usableH * clDirectRatio;
-  // This connects to the TOP portion of Closed Lost node (proportional to direct)
-  const cl_direct_portion = (d.s1_to_cl / totalCL) * closedLost.h;
-  svg.appendChild(cubicFlow(
-    s1.x + nodeW, s1_cl_top, s1_cl_bot,
-    closedLost.x, closedLost.y, closedLost.y + cl_direct_portion,
-    COL.flowS1Lost,
-    'S1 → Closed Lost (Direct)',
-    d.s1_to_cl + ' deals · ' + (clDirectRatio * 100).toFixed(1) + '% of all S1'
-  ));
+  const cl_direct_portion = totalCL > 0 ? (d.s1_to_cl / totalCL) * closedLost.h : 0;
 
-  // S1 → S2
-  svg.appendChild(cubicFlow(
-    s1.x + nodeW, s1_cl_bot, s1.y + usableH,
-    s2.x, s2.y, s2.y + s2.h,
-    COL.flowS1S2,
-    'S1 → S2 (Qualified)',
-    d.s1_to_s2 + ' deals · ' + (s2Ratio * 100).toFixed(1) + '% of all S1'
-  ));
+  svg.appendChild(cubicFlow(s1.x + nodeW, s1.y, s1_cl_bot, closedLost.x, closedLost.y, closedLost.y + cl_direct_portion, COL.flowS1Lost,
+    'S1 → Closed Lost (Direct)', d.s1_to_cl + ' deals · ' + (clDirectRatio * 100).toFixed(1) + '% of all S1'));
 
-  // S2 → Closed Lost (from S2)
+  svg.appendChild(cubicFlow(s1.x + nodeW, s1_cl_bot, s1.y + usableH, s2.x, s2.y, s2.y + s2.h, COL.flowS1S2,
+    'S1 → S2 (Qualified)', d.s1_to_s2 + ' deals · ' + (s2Ratio * 100).toFixed(1) + '% of all S1'));
+
   const s2_cl_split = s2.y + s2.h * lostFromS2Ratio;
-  const cl_s2_top = closedLost.y + cl_direct_portion;
-  svg.appendChild(cubicFlow(
-    s2.x + nodeW, s2.y, s2_cl_split,
-    closedLost.x, cl_s2_top, closedLost.y + closedLost.h,
-    COL.flowS2Lost,
-    'S2 → Closed Lost',
-    d.s2_to_cl + ' deals · ' + (lostFromS2Ratio * 100).toFixed(1) + '% of S2'
-  ));
+  svg.appendChild(cubicFlow(s2.x + nodeW, s2.y, s2_cl_split, closedLost.x, closedLost.y + cl_direct_portion, closedLost.y + closedLost.h, COL.flowS2Lost,
+    'S2 → Closed Lost', d.s2_to_cl + ' deals · ' + (lostFromS2Ratio * 100).toFixed(1) + '% of S2'));
 
-  // S2 → Closed Won
-  svg.appendChild(cubicFlow(
-    s2.x + nodeW, s2_cl_split, s2.y + s2.h,
-    closedWon.x, closedWon.y, closedWon.y + closedWon.h,
-    COL.flowS2Won,
-    'S2 → Closed Won',
-    d.s2_to_cw + ' deals · ' + (wonRatio * 100).toFixed(1) + '% of S2'
-  ));
+  svg.appendChild(cubicFlow(s2.x + nodeW, s2_cl_split, s2.y + s2.h, closedWon.x, closedWon.y, closedWon.y + closedWon.h, COL.flowS2Won,
+    'S2 → Closed Won', d.s2_to_cw + ' deals · ' + (wonRatio * 100).toFixed(1) + '% of S2'));
 
-  // -- NODES --
   [s1, s2, closedLost, closedWon].forEach(n => svg.appendChild(drawNode(n)));
 
-  // -- KPIs --
+  // KPIs
   const kpiRow = document.getElementById('kpis');
   kpiRow.innerHTML = '';
   [
@@ -540,32 +409,73 @@ function renderSankey(d) {
     card.innerHTML = `<div class="accent-bar" style="background:${k.color}"></div><div class="label">${k.label}</div><div class="value">${k.value.toLocaleString()}</div><div class="sub">${k.sub}</div>`;
     kpiRow.appendChild(card);
   });
+
+  document.getElementById('dealCount').textContent = TOTAL.toLocaleString() + ' deals';
 }
 
 
 // =====================
-// OWNER DROPDOWN
+// FILTER CONTROLS
 // =====================
-function populateOwnerDropdown(data) {
-  const select = document.getElementById('ownerSelect');
-  const owners = Object.keys(data).filter(k => k !== '_all').sort();
+function getSelectedData() {
+  const period = document.getElementById('periodSelect').value;
+  const owner = document.getElementById('ownerSelect').value;
 
+  const periodData = ALL_DATA[period];
+  if (!periodData) return null;
+
+  return periodData[owner] || null;
+}
+
+function refreshChart() {
+  const d = getSelectedData();
+  if (d) {
+    renderSankey(d);
+  } else {
+    renderSankey({ s1_to_cl: 0, s1_to_s2: 0, s2_to_cw: 0, s2_to_cl: 0 });
+  }
+}
+
+function populateOwnerDropdown() {
+  const select = document.getElementById('ownerSelect');
+  const period = document.getElementById('periodSelect').value;
+  const periodData = ALL_DATA[period] || {};
+
+  // Remember current selection
+  const current = select.value;
+
+  // Clear all except "All Owners"
+  select.innerHTML = '<option value="_all">All Owners</option>';
+
+  const owners = Object.keys(periodData).filter(k => k !== '_all').sort();
   owners.forEach(name => {
+    const d = periodData[name];
+    const total = d.s1_to_cl + d.s1_to_s2;
     const opt = document.createElement('option');
     opt.value = name;
-    const total = data[name].s1_to_cl + data[name].s1_to_s2;
     opt.textContent = name + ' (' + total + ' deals)';
     select.appendChild(opt);
   });
 
-  select.addEventListener('change', () => {
-    const key = select.value;
-    const d = data[key];
-    if (d) {
-      renderSankey(d);
-      const total = d.s1_to_cl + d.s1_to_s2;
-      document.getElementById('dealCount').textContent = total + ' total deals';
-    }
+  // Restore selection if still available, otherwise fall back to _all
+  if (periodData[current]) {
+    select.value = current;
+  } else {
+    select.value = '_all';
+  }
+}
+
+function setupFilters() {
+  const periodSelect = document.getElementById('periodSelect');
+  const ownerSelect = document.getElementById('ownerSelect');
+
+  periodSelect.addEventListener('change', () => {
+    populateOwnerDropdown();
+    refreshChart();
+  });
+
+  ownerSelect.addEventListener('change', () => {
+    refreshChart();
   });
 }
 
@@ -581,18 +491,22 @@ function populateOwnerDropdown(data) {
   try {
     ALL_DATA = await fetchData();
 
-    const allEntry = ALL_DATA['_all'];
-    if (!allEntry || (allEntry.s1_to_cl + allEntry.s1_to_s2) === 0) throw new Error("No data found");
+    // Verify we have at least one period with data
+    const periods = Object.keys(ALL_DATA);
+    if (periods.length === 0) throw new Error("No period data found in sheet");
+
+    // Default to this_quarter
+    const defaultPeriod = ALL_DATA['this_quarter'] ? 'this_quarter' : periods[0];
+    document.getElementById('periodSelect').value = defaultPeriod;
 
     loadingEl.style.display = 'none';
     svgEl.style.display = 'block';
     legendEl.style.display = 'flex';
 
-    populateOwnerDropdown(ALL_DATA);
-    renderSankey(allEntry);
+    setupFilters();
+    populateOwnerDropdown();
+    refreshChart();
 
-    const total = allEntry.s1_to_cl + allEntry.s1_to_s2;
-    document.getElementById('dealCount').textContent = total + ' total deals';
     document.getElementById('lastUpdated').textContent = 'Live from Google Sheets · loaded ' + new Date().toLocaleString();
 
   } catch (err) {

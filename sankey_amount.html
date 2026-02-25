@@ -80,12 +80,7 @@
 <div class="filter-bar">
   <div class="filter-group">
     <label>Period</label>
-    <select id="periodSelect">
-      <option value="this_quarter">This Quarter</option>
-      <option value="last_quarter">Last Quarter</option>
-      <option value="this_month">This Month</option>
-      <option value="last_month">Last Month</option>
-    </select>
+    <select id="periodSelect"></select>
   </div>
   <div class="filter-group">
     <label>Deal Owner</label>
@@ -125,7 +120,7 @@
 </div>
 
 <script>
-const COUNTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pubhtml?gid=283308049&single=true";
+const COUNTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=283308049&single=true&output=csv";
 const DEALS_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=1366180764&single=true&output=csv";
 
 const ALLOWED_OWNERS = ["Manmeet Saluja","Swapnil Dwivedi","Rohan Verma","Yash Chandra","Rohit Lakhanpal","Verity","Abhijeet Srivastava","Sneha Agarwal","Erin Dean","Rishabh Bhushan","Rory Costello"];
@@ -147,7 +142,7 @@ function parseCounts(csv){
   const lines=csv.trim().split("\n").map(l=>l.split(",").map(clean));
   const data={};
   for(let i=1;i<lines.length;i++){
-    const r=lines[i];if(r.length<6)continue;
+    const r=lines[i];if(r.length<5)continue;
     const[period,owner,source,target,countStr,amtStr]=r;
     if(!period||!owner)continue;
     const amt=parseFloat(amtStr)||0;
@@ -307,6 +302,26 @@ function renderSankey(d){
 function getSelectedData(){const p=document.getElementById('periodSelect').value,o=document.getElementById('ownerSelect').value;return(COUNTS[p]||{})[o]||null}
 function refreshChart(){const d=getSelectedData();renderSankey(d||{s1_to_cl:0,s1_to_s2:0,s2_to_cw:0,s2_to_cl:0})}
 
+function populatePeriodDropdown(){
+  const sel=document.getElementById('periodSelect');
+  const periods=Object.keys(COUNTS);
+  const qPeriods=periods.filter(p=>p.startsWith('Q')).sort((a,b)=>{
+    const[qa,ya]=a.split('_'),[qb,yb]=b.split('_');
+    return yb-ya || qb.replace('Q','')-qa.replace('Q','');
+  });
+  const otherPeriods=periods.filter(p=>!p.startsWith('Q'));
+  const sorted=[...qPeriods,...otherPeriods];
+  sel.innerHTML='';
+  sorted.forEach(p=>{
+    const opt=document.createElement('option');opt.value=p;
+    if(p==='this_month')opt.textContent='This Month';
+    else if(p==='last_month')opt.textContent='Last Month';
+    else opt.textContent=p.replace('_',' ');
+    sel.appendChild(opt);
+  });
+  if(sorted.length>0)sel.value=sorted[0];
+}
+
 function populateOwnerDropdown(){
   const sel=document.getElementById('ownerSelect'),period=document.getElementById('periodSelect').value,pd=COUNTS[period]||{},cur=sel.value;
   sel.innerHTML='<option value="_all">All Owners</option>';
@@ -327,9 +342,8 @@ function setupFilters(){
   try{
     await fetchAllData();
     const periods=Object.keys(COUNTS);if(periods.length===0)throw new Error("No data found");
-    document.getElementById('periodSelect').value=COUNTS['this_quarter']?'this_quarter':periods[0];
     loadEl.style.display='none';svgEl.style.display='block';legEl.style.display='flex';hintEl.style.display='block';
-    setupFilters();populateOwnerDropdown();refreshChart();
+    setupFilters();populatePeriodDropdown();populateOwnerDropdown();refreshChart();
     document.getElementById('lastUpdated').textContent='Live from Google Sheets · loaded '+new Date().toLocaleString();
   }catch(err){
     loadEl.innerHTML=`<div class="error-msg"><p>Could not load data.</p><p style="margin-top:8px;font-size:12px;color:#6b7280">Publish "Sankey By Owner" and "Sankey Deals" sheets as CSV.<br>${err.message}</p></div>`;

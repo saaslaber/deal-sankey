@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pipeline — By Deal Amount</title>
+<title>Deal Pipeline Sankey</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
@@ -12,24 +12,30 @@
   .dashboard-header h1{font-size:28px;font-weight:700;letter-spacing:-0.5px;color:#fff;margin-bottom:6px}
   .dashboard-header p{font-size:14px;color:#6b7280;font-weight:300}
   .dashboard-header .updated{font-size:12px;color:#4b5060;margin-top:4px}
-  .back-link{position:absolute;top:20px;left:24px;color:#6b7280;text-decoration:none;font-size:13px;transition:color 0.2s}
-  .back-link:hover{color:#e4e6eb}
-  .filter-bar{display:flex;align-items:center;gap:24px;margin-bottom:28px;width:100%;max-width:1200px;flex-wrap:wrap}
+  .toggle-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:24px;background:#181a20;border:1px solid #2a2d36;border-radius:10px;padding:4px;width:fit-content}
+  .toggle-btn{padding:10px 28px;border-radius:8px;border:none;background:transparent;color:#6b7280;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .toggle-btn.active{background:#6366f1;color:#fff;box-shadow:0 2px 8px rgba(99,102,241,0.3)}
+  .toggle-btn:not(.active):hover{color:#e4e6eb}
+  .filter-bar{display:flex;align-items:center;gap:24px;margin-bottom:16px;width:100%;max-width:1200px;flex-wrap:wrap}
   .filter-group{display:flex;align-items:center;gap:10px}
   .filter-group label{font-size:12px;color:#6b7280;font-weight:500;text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap}
   .filter-group select{background:#181a20;color:#e4e6eb;border:1px solid #2a2d36;border-radius:8px;padding:10px 36px 10px 14px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;min-width:200px;transition:border-color 0.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%236b7280'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
   .filter-group select:hover{border-color:#6366f1}
   .filter-group select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,0.2)}
+  .period-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .period-chip{padding:8px 16px;border-radius:8px;border:1px solid #2a2d36;background:#181a20;color:#6b7280;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;user-select:none}
+  .period-chip.selected{background:#6366f1;color:#fff;border-color:#6366f1}
+  .period-chip:hover:not(.selected){border-color:#6366f1;color:#e4e6eb}
   .deal-badge{font-size:13px;color:#9ca3af;background:#1e2028;border:1px solid #2a2d36;padding:6px 14px;border-radius:6px;margin-left:auto}
   .sankey-container{width:100%;max-width:1200px;background:#181a20;border-radius:16px;border:1px solid #2a2d36;padding:32px 16px;position:relative;overflow:visible}
-  .sankey-container::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,197,94,0.4),transparent)}
+  .sankey-container::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.4),transparent)}
   svg{width:100%;height:auto;display:block;overflow:visible}
   .kpi-row{display:flex;gap:14px;width:100%;max-width:1200px;margin-top:24px;flex-wrap:wrap}
   .kpi-card{flex:1;min-width:140px;background:#181a20;border:1px solid #2a2d36;border-radius:12px;padding:20px 24px;position:relative;overflow:hidden;transition:border-color 0.3s;cursor:pointer}
   .kpi-card:hover{border-color:#3b3f4a}
   .kpi-card .accent-bar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
   .kpi-card .label{font-size:12px;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
-  .kpi-card .value{font-size:28px;font-weight:700;color:#fff;line-height:1}
+  .kpi-card .value{font-size:32px;font-weight:700;color:#fff;line-height:1}
   .kpi-card .sub{font-size:13px;color:#e4e6eb;margin-top:6px;font-weight:300}
   .tooltip{position:fixed;background:#1e2028;border:1px solid #3b3f4a;border-radius:8px;padding:12px 16px;font-size:13px;color:#e4e6eb;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4);max-width:300px}
   .tooltip.visible{opacity:1}
@@ -38,12 +44,10 @@
   .legend{display:flex;gap:24px;justify-content:center;margin-top:20px;width:100%;max-width:1200px}
   .legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#6b7280}
   .legend-dot{width:10px;height:10px;border-radius:50%}
-  .flow-path{transition:opacity 0.2s;cursor:pointer}
-  .flow-path:hover{opacity:1!important}
-  .node-rect{cursor:pointer;transition:opacity 0.15s}
-  .node-rect:hover{opacity:0.85}
+  .flow-path{transition:opacity 0.2s;cursor:pointer}.flow-path:hover{opacity:1!important}
+  .node-rect{cursor:pointer;transition:opacity 0.15s}.node-rect:hover{opacity:0.85}
   .loading{display:flex;align-items:center;justify-content:center;height:300px;color:#6b7280;font-size:15px}
-  .loading .spinner{width:20px;height:20px;border:2px solid #2a2d36;border-top-color:#22c55e;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:12px}
+  .loading .spinner{width:20px;height:20px;border:2px solid #2a2d36;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:12px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .error-msg{text-align:center;color:#f97316;padding:40px;font-size:14px}
   .no-data-msg{text-align:center;color:#6b7280;padding:80px 40px;font-size:16px}
@@ -69,285 +73,222 @@
 </style>
 </head>
 <body>
-<a class="back-link" href="index.html">← Back to dashboard</a>
-
 <div class="dashboard-header">
-  <h1>Deal Pipeline Flow — By Amount</h1>
-  <p>S1 → S2 Qualification → Outcome (USD value)</p>
+  <h1>Deal Pipeline Flow</h1>
+  <p>S1 → S2 Qualification → Outcome</p>
   <div class="updated" id="lastUpdated"></div>
 </div>
-
+<div class="toggle-bar">
+  <button class="toggle-btn" id="toggleCount" onclick="setMode('count')">By # Deals</button>
+  <button class="toggle-btn active" id="toggleAmount" onclick="setMode('amount')">By $ Amount</button>
+</div>
 <div class="filter-bar">
-  <div class="filter-group">
-    <label>Period</label>
-    <select id="periodSelect"></select>
-  </div>
-  <div class="filter-group">
-    <label>Deal Owner</label>
-    <select id="ownerSelect"><option value="_all">All Owners</option></select>
-  </div>
+  <div class="filter-group"><label>Period</label><div class="period-chips" id="periodChips"></div></div>
+</div>
+<div class="filter-bar">
+  <div class="filter-group"><label>Deal Owner</label><select id="ownerSelect"><option value="_all">All Owners</option></select></div>
   <span class="deal-badge" id="dealCount"></span>
 </div>
-
 <div class="sankey-container">
   <div class="loading" id="loadingState"><div class="spinner"></div>Fetching latest data…</div>
   <svg id="sankey" viewBox="0 0 1200 440" style="display:none"></svg>
 </div>
-
-<div class="click-hint" id="clickHint" style="display:none">Click any node or flow to view the underlying deals</div>
-
+<div class="click-hint" id="clickHint" style="display:none">Click any node or flow to view deals · Click periods to multi-select</div>
 <div class="legend" id="legend" style="display:none">
-  <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>S1 → S2 (Qualified)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>S1 → S2</div>
   <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Closed Lost</div>
   <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Closed Won</div>
 </div>
-
 <div class="kpi-row" id="kpis"></div>
-
 <div class="tooltip" id="tooltip"><div class="tt-label"></div><div class="tt-value"></div></div>
-
 <div class="drawer-overlay" id="drawerOverlay">
   <div class="drawer">
-    <div class="drawer-header">
-      <h2 id="drawerTitle">Deals</h2>
-      <button class="drawer-close" id="drawerClose">✕</button>
-    </div>
-    <div class="drawer-body">
-      <div class="drawer-summary" id="drawerSummary"></div>
-      <table class="drawer-table"><thead id="drawerThead"></thead><tbody id="drawerTbody"></tbody></table>
-    </div>
+    <div class="drawer-header"><h2 id="drawerTitle">Deals</h2><button class="drawer-close" id="drawerClose">✕</button></div>
+    <div class="drawer-body"><div class="drawer-summary" id="drawerSummary"></div><table class="drawer-table"><thead id="drawerThead"></thead><tbody id="drawerTbody"></tbody></table></div>
   </div>
 </div>
-
 <script>
-const COUNTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=283308049&single=true&output=csv";
-const DEALS_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=1366180764&single=true&output=csv";
+const COUNTS_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=283308049&single=true&output=csv";
+const DEALS_CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vTHE15TTYfJlwf7e3tlfGehGcyzzx76BRwGGoBV9I_0-H-F-F5lHfm8QnhTz9S_rR6RcOFDHRnQUCto/pub?gid=1366180764&single=true&output=csv";
+const ALLOWED_OWNERS=["Manmeet Saluja","Swapnil Dwivedi","Rohan Verma","Yash Chandra","Rohit Lakhanpal","Verity","Abhijeet Srivastava","Sneha Agarwal","Erin Dean","Rishabh Bhushan","Rory Costello"];
 
-const ALLOWED_OWNERS = ["Manmeet Saluja","Swapnil Dwivedi","Rohan Verma","Yash Chandra","Rohit Lakhanpal","Verity","Abhijeet Srivastava","Sneha Agarwal","Erin Dean","Rishabh Bhushan","Rory Costello"];
-
-let COUNTS={},DEALS=[];
+let COUNT_DATA={},AMOUNT_DATA={},DEALS=[],MODE='amount',SELECTED_PERIODS=new Set(),ALL_PERIODS=[];
 
 async function fetchAllData(){
   const[c,d]=await Promise.all([fetch(COUNTS_CSV_URL),fetch(DEALS_CSV_URL)]);
-  if(!c.ok)throw new Error("Counts CSV: HTTP "+c.status);
-  if(!d.ok)throw new Error("Deals CSV: HTTP "+d.status);
-  COUNTS=parseCounts(await c.text());
+  if(!c.ok)throw new Error("Counts: HTTP "+c.status);
+  if(!d.ok)throw new Error("Deals: HTTP "+d.status);
+  const csv=await c.text();
+  COUNT_DATA=parseData(csv,4);AMOUNT_DATA=parseData(csv,5);
   DEALS=parseDeals(await d.text());
 }
-
 function clean(s){return(s||'').trim().replace(/^"|"$/g,'')}
-
-// KEY DIFFERENCE: reads column 5 (Amount) instead of column 4 (Count)
-function parseCounts(csv){
-  const lines=csv.trim().split("\n").map(l=>l.split(",").map(clean));
-  const data={};
+function parseData(csv,ci){
+  const lines=csv.trim().split("\n").map(l=>l.split(",").map(clean)),data={};
   for(let i=1;i<lines.length;i++){
     const r=lines[i];if(r.length<5)continue;
-    const[period,owner,source,target,countStr,amtStr]=r;
+    const[period,owner,source,target]=r;const val=parseFloat(r[ci])||0;
     if(!period||!owner)continue;
-    const amt=parseFloat(amtStr)||0;
     if(!data[period])data[period]={};
     if(!data[period][owner])data[period][owner]={s1_to_cl:0,s1_to_s2:0,s2_to_cw:0,s2_to_cl:0};
     const d=data[period][owner],sl=source.toLowerCase(),tl=target.toLowerCase();
-    if(sl.includes("s1")&&tl.includes("closed lost"))d.s1_to_cl=amt;
-    else if(sl.includes("s1")&&tl.includes("s2"))d.s1_to_s2=amt;
-    else if(sl.includes("s2")&&tl.includes("closed won"))d.s2_to_cw=amt;
-    else if(sl.includes("s2")&&tl.includes("closed lost"))d.s2_to_cl=amt;
+    if(sl.includes("s1")&&tl.includes("closed lost"))d.s1_to_cl=val;
+    else if(sl.includes("s1")&&tl.includes("s2"))d.s1_to_s2=val;
+    else if(sl.includes("s2")&&tl.includes("closed won"))d.s2_to_cw=val;
+    else if(sl.includes("s2")&&tl.includes("closed lost"))d.s2_to_cl=val;
   }
   return data;
 }
-
-function splitRow(line){const f=[];let c='',q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'){q=!q;continue}if(ch===','&&!q){f.push(c.trim());c='';continue}c+=ch}f.push(c.trim());return f}
-
+function splitRow(l){const f=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){q=!q;continue}if(ch===','&&!q){f.push(c.trim());c='';continue}c+=ch}f.push(c.trim());return f}
 function parseDeals(csv){
   const lines=csv.trim().split("\n"),deals=[];
-  for(let i=1;i<lines.length;i++){
-    const r=splitRow(lines[i]);if(r.length<12)continue;
-    deals.push({period:r[0],owner:r[1],bucket:r[2],dealname:r[3],amount:r[4],closedate:r[5],subscription_type:r[6],loss_reason:r[7],secondary_loss:r[8],win_reason:r[9],secondary_win:r[10],ae_notes:r[11]||""});
-  }
+  for(let i=1;i<lines.length;i++){const r=splitRow(lines[i]);if(r.length<11)continue;
+    deals.push({period:r[0],owner:r[1],bucket:r[2],dealname:r[3],amount:r[4],closedate:r[5],subscription_type:r[6],loss_reason:r[7],secondary_loss:r[8],win_reason:r[9],secondary_win:r[10],ae_notes:r[11]||""});}
   return deals;
 }
 
+function setMode(m){MODE=m;document.getElementById('toggleCount').classList.toggle('active',m==='count');document.getElementById('toggleAmount').classList.toggle('active',m==='amount');populateOwnerDropdown();refreshChart()}
+function getData(){return MODE==='count'?COUNT_DATA:AMOUNT_DATA}
+function isAmt(){return MODE==='amount'}
 function fmtCur(n){return n.toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0,maximumFractionDigits:0})}
-function fmtShort(n){if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'K';return fmtCur(n)}
+function fmtShort(n){if(n>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(0)+'K';return fmtCur(n)}
+function fmtVal(n){return isAmt()?fmtShort(n):n.toLocaleString()}
+function fmtFull(n){return isAmt()?fmtCur(n):n.toLocaleString()}
+function unitLbl(n){return isAmt()?fmtShort(n):n.toLocaleString()+' deals'}
 
-const COL={s1:'#6366f1',s2:'#8b5cf6',won:'#22c55e',lost:'#f97316',flowS1S2:'rgba(99,102,241,0.28)',flowS1Lost:'rgba(249,115,22,0.22)',flowS2Won:'rgba(34,197,94,0.28)',flowS2Lost:'rgba(249,115,22,0.22)'};
-const W=1200,H=440,nodeW=28,padL=160,padR=160;
+function getSelectedData(){
+  const data=getData(),owner=document.getElementById('ownerSelect').value;
+  const m={s1_to_cl:0,s1_to_s2:0,s2_to_cw:0,s2_to_cl:0};let has=false;
+  SELECTED_PERIODS.forEach(p=>{const pd=data[p];if(!pd)return;const d=pd[owner];if(!d)return;has=true;m.s1_to_cl+=d.s1_to_cl;m.s1_to_s2+=d.s1_to_s2;m.s2_to_cw+=d.s2_to_cw;m.s2_to_cl+=d.s2_to_cl});
+  return has?m:null;
+}
+function getFilteredDeals(bk){
+  const owner=document.getElementById('ownerSelect').value;
+  return DEALS.filter(d=>{if(!SELECTED_PERIODS.has(d.period))return false;if(owner!=='_all'&&d.owner!==owner)return false;return bk.some(b=>d.bucket.toLowerCase().includes(b))});
+}
 
-function el(tag,a={}){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v] of Object.entries(a))e.setAttribute(k,v);return e}
+function populatePeriodChips(){
+  const ct=document.getElementById('periodChips');ct.innerHTML='';
+  const periods=Object.keys(COUNT_DATA);
+  const qP=periods.filter(p=>p.startsWith('Q')).sort((a,b)=>{const[qa,ya]=a.split('_'),[qb,yb]=b.split('_');return yb-ya||qb.replace('Q','')-qa.replace('Q','')});
+  const oP=periods.filter(p=>!p.startsWith('Q'));
+  ALL_PERIODS=[...qP,...oP];
 
-function cubicFlow(x0,y0t,y0b,x1,y1t,y1b,fill,hL,hV,bk){
+  const allC=document.createElement('div');allC.className='period-chip';allC.textContent='All';
+  allC.addEventListener('click',()=>{
+    if(SELECTED_PERIODS.size===ALL_PERIODS.length){SELECTED_PERIODS.clear();if(ALL_PERIODS.length)SELECTED_PERIODS.add(ALL_PERIODS[0])}
+    else SELECTED_PERIODS=new Set(ALL_PERIODS);
+    updChips();populateOwnerDropdown();refreshChart()});
+  ct.appendChild(allC);
+
+  ALL_PERIODS.forEach(p=>{
+    const c=document.createElement('div');c.className='period-chip'+(SELECTED_PERIODS.has(p)?' selected':'');c.dataset.period=p;
+    c.textContent=p==='this_month'?'This Month':p==='last_month'?'Last Month':p.replace('_',' ');
+    c.addEventListener('click',()=>{
+      if(SELECTED_PERIODS.has(p)){if(SELECTED_PERIODS.size>1)SELECTED_PERIODS.delete(p)}else SELECTED_PERIODS.add(p);
+      updChips();populateOwnerDropdown();refreshChart()});
+    ct.appendChild(c)});
+  updChips();
+}
+function updChips(){document.querySelectorAll('.period-chip').forEach(c=>{c.textContent==='All'?c.classList.toggle('selected',SELECTED_PERIODS.size===ALL_PERIODS.length):c.classList.toggle('selected',SELECTED_PERIODS.has(c.dataset.period))})}
+
+function populateOwnerDropdown(){
+  const sel=document.getElementById('ownerSelect'),data=getData(),cur=sel.value;
+  sel.innerHTML='<option value="_all">All Owners</option>';
+  const ot={};SELECTED_PERIODS.forEach(p=>{const pd=data[p]||{};Object.keys(pd).filter(k=>k!=='_all'&&ALLOWED_OWNERS.includes(k)).forEach(n=>{ot[n]=(ot[n]||0)+pd[n].s1_to_cl+pd[n].s1_to_s2})});
+  Object.keys(ot).sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n+' ('+(isAmt()?fmtShort(ot[n]):ot[n])+')';sel.appendChild(o)});
+  sel.value=ot[cur]!==undefined?cur:'_all';
+}
+
+const COL={s1:'#6366f1',s2:'#8b5cf6',won:'#22c55e',lost:'#f97316',fS1S2:'rgba(99,102,241,0.28)',fS1L:'rgba(249,115,22,0.22)',fS2W:'rgba(34,197,94,0.28)',fS2L:'rgba(249,115,22,0.22)'};
+const W=1200,H=440,nW=28,pL=160,pR=160;
+function el(t,a={}){const e=document.createElementNS('http://www.w3.org/2000/svg',t);for(const[k,v] of Object.entries(a))e.setAttribute(k,v);return e}
+function cFlow(x0,y0t,y0b,x1,y1t,y1b,fill,hL,hV,bk){
   const mx=(x0+x1)/2,d=`M${x0},${y0t} C${mx},${y0t} ${mx},${y1t} ${x1},${y1t} L${x1},${y1b} C${mx},${y1b} ${mx},${y0b} ${x0},${y0b} Z`;
   const p=el('path',{d,fill,class:'flow-path',opacity:'0.7'});
   p.addEventListener('mouseenter',e=>{p.setAttribute('opacity','0.95');showTT(e,hL,hV)});
-  p.addEventListener('mousemove',e=>moveTT(e));
-  p.addEventListener('mouseleave',()=>{p.setAttribute('opacity','0.7');hideTT()});
-  p.addEventListener('click',()=>openDrawer(bk,hL));
-  return p;
-}
-
+  p.addEventListener('mousemove',e=>moveTT(e));p.addEventListener('mouseleave',()=>{p.setAttribute('opacity','0.7');hideTT()});
+  p.addEventListener('click',()=>openDrawer(bk,hL));return p}
 function drawNode(n){
-  const g=el('g');
-  g.appendChild(el('rect',{x:n.x-4,y:n.y-4,width:nodeW+8,height:n.h+8,rx:8,fill:n.color,opacity:0.12,filter:'url(#glow)'}));
-  const rect=el('rect',{x:n.x,y:n.y,width:nodeW,height:n.h,rx:4,fill:n.color,class:'node-rect'});
-  rect.addEventListener('click',()=>openDrawer(n.buckets,n.label));
-  g.appendChild(rect);
-  const mid=(padL+(W-padR-nodeW))/2,isR=n.x>W/2,isC=Math.abs(n.x-mid)<60;
-  const lx=(isC||isR)?n.x+nodeW+16:n.x-16,anc=(isC||isR)?'start':'end',ly=n.y+n.h/2;
-  const t1=el('text',{x:lx,y:ly-10,'text-anchor':anc,fill:'#e4e6eb','font-size':'15','font-weight':'700','font-family':'DM Sans,sans-serif'});
-  t1.textContent=n.label;g.appendChild(t1);
-  const t2=el('text',{x:lx,y:ly+10,'text-anchor':anc,fill:'#6b7280','font-size':'13','font-weight':'300','font-family':'DM Sans,sans-serif'});
-  t2.textContent=fmtShort(n.amount);g.appendChild(t2);
-  return g;
-}
-
+  const g=el('g');g.appendChild(el('rect',{x:n.x-4,y:n.y-4,width:nW+8,height:n.h+8,rx:8,fill:n.color,opacity:0.12,filter:'url(#glow)'}));
+  const rect=el('rect',{x:n.x,y:n.y,width:nW,height:n.h,rx:4,fill:n.color,class:'node-rect'});
+  rect.addEventListener('click',()=>openDrawer(n.bk,n.label));g.appendChild(rect);
+  const mid=(pL+(W-pR-nW))/2,isR=n.x>W/2,isC=Math.abs(n.x-mid)<60;
+  const lx=(isC||isR)?n.x+nW+16:n.x-16,anc=(isC||isR)?'start':'end',ly=n.y+n.h/2;
+  const t1=el('text',{x:lx,y:ly-10,'text-anchor':anc,fill:'#e4e6eb','font-size':'15','font-weight':'700','font-family':'DM Sans,sans-serif'});t1.textContent=n.label;g.appendChild(t1);
+  const t2=el('text',{x:lx,y:ly+10,'text-anchor':anc,fill:'#6b7280','font-size':'13','font-weight':'300','font-family':'DM Sans,sans-serif'});t2.textContent=unitLbl(n.v);g.appendChild(t2);
+  return g}
 const ttEl=document.getElementById('tooltip');
 function showTT(e,l,v){ttEl.querySelector('.tt-label').textContent=l;ttEl.querySelector('.tt-value').textContent=v;ttEl.classList.add('visible');moveTT(e)}
 function moveTT(e){ttEl.style.left=(e.clientX+16)+'px';ttEl.style.top=(e.clientY-10)+'px'}
 function hideTT(){ttEl.classList.remove('visible')}
 
-function getFilteredDeals(bk){
-  const period=document.getElementById('periodSelect').value,owner=document.getElementById('ownerSelect').value;
-  return DEALS.filter(d=>{
-    if(d.period!==period)return false;
-    if(owner!=='_all'&&d.owner!==owner)return false;
-    return bk.some(b=>d.bucket.toLowerCase().includes(b));
-  });
-}
-
 function openDrawer(bk,title){
-  const deals=getFilteredDeals(bk);
-  const overlay=document.getElementById('drawerOverlay');
-  const isWon=bk.some(b=>b.includes('won')),isLost=bk.some(b=>b.includes('lost'));
-
-  document.getElementById('drawerTitle').innerHTML=`${title} <span class="badge" style="background:${isWon?'rgba(34,197,94,0.15);color:#22c55e':isLost?'rgba(249,115,22,0.15);color:#f97316':'rgba(99,102,241,0.15);color:#6366f1'}">${deals.length} deals</span>`;
-
-  const totalAmt=deals.reduce((s,d)=>s+(parseFloat(d.amount)||0),0);
-  document.getElementById('drawerSummary').innerHTML=`<span><strong>${deals.length}</strong> deals</span><span>Total: <strong>${fmtCur(totalAmt)}</strong></span>`;
-
-  let cols=['Deal Name','Amount','Close Date','Owner','Subscription Type'];
-  if(isLost)cols.push('Loss Reason','Secondary Loss','AE Notes');
-  if(isWon)cols.push('Win Reason','Secondary Win','AE Notes');
-  if(!isWon&&!isLost)cols.push('Loss Reason','Win Reason','AE Notes');
-
+  const deals=getFilteredDeals(bk),isW=bk.some(b=>b.includes('won')),isL=bk.some(b=>b.includes('lost'));
+  document.getElementById('drawerTitle').innerHTML=`${title} <span class="badge" style="background:${isW?'rgba(34,197,94,0.15);color:#22c55e':isL?'rgba(249,115,22,0.15);color:#f97316':'rgba(99,102,241,0.15);color:#6366f1'}">${deals.length} deals</span>`;
+  const tot=deals.reduce((s,d)=>s+(parseFloat(d.amount)||0),0);
+  document.getElementById('drawerSummary').innerHTML=`<span><strong>${deals.length}</strong> deals</span><span>Total: <strong>${fmtCur(tot)}</strong></span>`;
+  let cols=['Deal Name','Amount','Close Date','Owner','Sub Type'];
+  if(isL)cols.push('Loss Reason','2nd Loss','AE Notes');if(isW)cols.push('Win Reason','2nd Win','AE Notes');if(!isW&&!isL)cols.push('Loss Reason','Win Reason','AE Notes');
   document.getElementById('drawerThead').innerHTML='<tr>'+cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
   document.getElementById('drawerTbody').innerHTML=deals.map(d=>{
-    let cells=[`<td title="${esc(d.dealname)}">${esc(d.dealname)}</td>`,`<td class="amt">${fmtCur(parseFloat(d.amount)||0)}</td>`,`<td>${esc(d.closedate)}</td>`,`<td>${esc(d.owner)}</td>`,`<td>${esc(d.subscription_type)}</td>`];
-    if(isLost){cells.push(`<td title="${esc(d.loss_reason)}">${esc(d.loss_reason)}</td>`,`<td>${esc(d.secondary_loss)}</td>`,`<td title="${esc(d.ae_notes)}">${esc(d.ae_notes)}</td>`)}
-    if(isWon){cells.push(`<td title="${esc(d.win_reason)}">${esc(d.win_reason)}</td>`,`<td>${esc(d.secondary_win)}</td>`,`<td title="${esc(d.ae_notes)}">${esc(d.ae_notes)}</td>`)}
-    if(!isWon&&!isLost){cells.push(`<td>${esc(d.loss_reason)}</td>`,`<td>${esc(d.win_reason)}</td>`,`<td title="${esc(d.ae_notes)}">${esc(d.ae_notes)}</td>`)}
-    return '<tr>'+cells.join('')+'</tr>';
-  }).join('');
-  overlay.classList.add('open');
-}
-
+    let c=[`<td title="${esc(d.dealname)}">${esc(d.dealname)}</td>`,`<td class="amt">${fmtCur(parseFloat(d.amount)||0)}</td>`,`<td>${esc(d.closedate)}</td>`,`<td>${esc(d.owner)}</td>`,`<td>${esc(d.subscription_type)}</td>`];
+    if(isL)c.push(`<td title="${esc(d.loss_reason)}">${esc(d.loss_reason)}</td>`,`<td>${esc(d.secondary_loss)}</td>`,`<td title="${esc(d.ae_notes)}">${esc(d.ae_notes)}</td>`);
+    if(isW)c.push(`<td title="${esc(d.win_reason)}">${esc(d.win_reason)}</td>`,`<td>${esc(d.secondary_win)}</td>`,`<td title="${esc(d.ae_notes)}">${esc(d.ae_notes)}</td>`);
+    if(!isW&&!isL)c.push(`<td>${esc(d.loss_reason)}</td>`,`<td>${esc(d.win_reason)}</td>`,`<td title="${esc(d.ae_notes)}">${esc(d.ae_notes)}</td>`);
+    return '<tr>'+c.join('')+'</tr>'}).join('');
+  document.getElementById('drawerOverlay').classList.add('open')}
 function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('open')}
 function esc(s){if(!s)return'—';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
-
 document.getElementById('drawerClose').addEventListener('click',closeDrawer);
 document.getElementById('drawerOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDrawer()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
 
 function renderSankey(d){
-  const svg=document.getElementById('sankey');svg.innerHTML='';
-  const TOTAL=d.s1_to_cl+d.s1_to_s2;
-  const container=document.querySelector('.sankey-container');
-  let noData=container.querySelector('.no-data-msg');
-  if(TOTAL===0){svg.style.display='none';document.getElementById('kpis').innerHTML='';if(!noData){noData=document.createElement('div');noData.className='no-data-msg';container.appendChild(noData)}noData.textContent='No deals found for this selection.';noData.style.display='block';document.getElementById('dealCount').textContent='$0';return}
-  if(noData)noData.style.display='none';svg.style.display='block';
-
-  const s2Ratio=d.s1_to_s2/TOTAL,clDirRatio=d.s1_to_cl/TOTAL,totalCL=d.s1_to_cl+d.s2_to_cl;
-  const wonRatio=d.s2_to_cw/(d.s1_to_s2||1),lostS2Ratio=d.s2_to_cl/(d.s1_to_s2||1);
-  const cwOfS1=(d.s2_to_cw/TOTAL*100).toFixed(1);
-
-  const leftX=padL,midX=W/2-nodeW/2,rightX=W-padR-nodeW;
-  const topY=30,botY=H-30,uH=botY-topY;
-
-  const s1={x:leftX,y:topY,h:uH,label:'S1 (All Deals)',color:COL.s1,amount:TOTAL,buckets:['s1 to closed lost','s2 to closed won','s2 to closed lost']};
-  const s2H=uH*s2Ratio;
-  const s2={x:midX,y:botY-s2H,h:s2H,label:'S2 (Qualified)',color:COL.s2,amount:d.s1_to_s2,buckets:['s2 to closed won','s2 to closed lost']};
-  const clR=totalCL/TOTAL,cwR=d.s2_to_cw/TOTAL,gap=24;
-  const clH=Math.max(uH*(clR/(clR+cwR+0.05)),24),cwH=Math.max(uH-clH-gap,24);
-  const closedLost={x:rightX,y:topY,h:clH,label:'Closed Lost',color:COL.lost,amount:totalCL,buckets:['closed lost']};
-  const closedWon={x:rightX,y:topY+clH+gap,h:cwH,label:'Closed Won',color:COL.won,amount:d.s2_to_cw,buckets:['closed won']};
-
+  const svg=document.getElementById('sankey');svg.innerHTML='';const T=d.s1_to_cl+d.s1_to_s2;
+  const ct=document.querySelector('.sankey-container');let nd=ct.querySelector('.no-data-msg');
+  if(T===0){svg.style.display='none';document.getElementById('kpis').innerHTML='';if(!nd){nd=document.createElement('div');nd.className='no-data-msg';ct.appendChild(nd)}nd.textContent='No deals found.';nd.style.display='block';document.getElementById('dealCount').textContent=isAmt()?'$0':'0 deals';return}
+  if(nd)nd.style.display='none';svg.style.display='block';
+  const s2R=d.s1_to_s2/T,clDR=d.s1_to_cl/T,tCL=d.s1_to_cl+d.s2_to_cl;
+  const wR=d.s2_to_cw/(d.s1_to_s2||1),lR=d.s2_to_cl/(d.s1_to_s2||1),cwS1=(d.s2_to_cw/T*100).toFixed(1);
+  const lX=pL,mX=W/2-nW/2,rX=W-pR-nW,tY=30,bY=H-30,uH=bY-tY;
+  const s1={x:lX,y:tY,h:uH,label:'S1 (All Deals)',color:COL.s1,v:T,bk:['s1 to closed lost','s2 to closed won','s2 to closed lost']};
+  const s2H=uH*s2R;const s2={x:mX,y:bY-s2H,h:s2H,label:'S2 (Qualified)',color:COL.s2,v:d.s1_to_s2,bk:['s2 to closed won','s2 to closed lost']};
+  const clR2=tCL/T,cwR2=d.s2_to_cw/T,gap=24;const clH=Math.max(uH*(clR2/(clR2+cwR2+0.05)),24),cwH=Math.max(uH-clH-gap,24);
+  const cL={x:rX,y:tY,h:clH,label:'Closed Lost',color:COL.lost,v:tCL,bk:['closed lost']};
+  const cW={x:rX,y:tY+clH+gap,h:cwH,label:'Closed Won',color:COL.won,v:d.s2_to_cw,bk:['closed won']};
   const defs=el('defs');const blur=el('filter',{id:'glow'});blur.appendChild(el('feGaussianBlur',{in:'SourceGraphic',stdDeviation:'8'}));defs.appendChild(blur);svg.appendChild(defs);
-
-  const s1cb=s1.y+uH*clDirRatio,cldp=totalCL>0?(d.s1_to_cl/totalCL)*closedLost.h:0;
-
-  svg.appendChild(cubicFlow(s1.x+nodeW,s1.y,s1cb,closedLost.x,closedLost.y,closedLost.y+cldp,COL.flowS1Lost,'S1 → Closed Lost (Direct)',fmtCur(d.s1_to_cl)+' · '+(clDirRatio*100).toFixed(1)+'% of S1',['s1 to closed lost']));
-  svg.appendChild(cubicFlow(s1.x+nodeW,s1cb,s1.y+uH,s2.x,s2.y,s2.y+s2.h,COL.flowS1S2,'S1 → S2 (Qualified)',fmtCur(d.s1_to_s2)+' · '+(s2Ratio*100).toFixed(1)+'% of S1',['s2 to closed won','s2 to closed lost']));
-  const s2cs=s2.y+s2.h*lostS2Ratio;
-  svg.appendChild(cubicFlow(s2.x+nodeW,s2.y,s2cs,closedLost.x,closedLost.y+cldp,closedLost.y+closedLost.h,COL.flowS2Lost,'S2 → Closed Lost',fmtCur(d.s2_to_cl)+' · '+(lostS2Ratio*100).toFixed(1)+'% of S2',['s2 to closed lost']));
-  svg.appendChild(cubicFlow(s2.x+nodeW,s2cs,s2.y+s2.h,closedWon.x,closedWon.y,closedWon.y+closedWon.h,COL.flowS2Won,'S2 → Closed Won',fmtCur(d.s2_to_cw)+' · '+(wonRatio*100).toFixed(1)+'% of S2',['s2 to closed won']));
-
-  [s1,s2,closedLost,closedWon].forEach(n=>svg.appendChild(drawNode(n)));
-
-  const kpiRow=document.getElementById('kpis');kpiRow.innerHTML='';
-  [
-    {label:'Total S1 Value',value:fmtShort(TOTAL),sub:'100% of pipeline',color:COL.s1,buckets:['s1 to closed lost','s2 to closed won','s2 to closed lost']},
-    {label:'Qualified (S2)',value:fmtShort(d.s1_to_s2),sub:(s2Ratio*100).toFixed(1)+'% qualification rate',color:COL.s2,buckets:['s2 to closed won','s2 to closed lost']},
-    {label:'Closed Won',value:fmtShort(d.s2_to_cw),sub:(wonRatio*100).toFixed(1)+'% win rate (of S2)',color:COL.won,buckets:['closed won']},
-    {label:'CW % of S1',value:cwOfS1+'%',sub:fmtShort(d.s2_to_cw)+' won of '+fmtShort(TOTAL)+' total',color:'#10b981',buckets:['closed won']},
-    {label:'Total Lost',value:fmtShort(totalCL),sub:fmtShort(d.s1_to_cl)+' direct + '+fmtShort(d.s2_to_cl)+' from S2',color:COL.lost,buckets:['closed lost']},
-  ].forEach(k=>{
-    const card=document.createElement('div');card.className='kpi-card';
-    card.innerHTML=`<div class="accent-bar" style="background:${k.color}"></div><div class="label">${k.label}</div><div class="value">${k.value}</div><div class="sub">${k.sub}</div>`;
-    card.addEventListener('click',()=>openDrawer(k.buckets,k.label));
-    kpiRow.appendChild(card);
-  });
-  document.getElementById('dealCount').textContent=fmtShort(TOTAL)+' pipeline';
+  const s1cb=s1.y+uH*clDR,cldp=tCL>0?(d.s1_to_cl/tCL)*cL.h:0;
+  svg.appendChild(cFlow(s1.x+nW,s1.y,s1cb,cL.x,cL.y,cL.y+cldp,COL.fS1L,'S1 → CL (Direct)',fmtFull(d.s1_to_cl)+' · '+(clDR*100).toFixed(1)+'%',['s1 to closed lost']));
+  svg.appendChild(cFlow(s1.x+nW,s1cb,s1.y+uH,s2.x,s2.y,s2.y+s2.h,COL.fS1S2,'S1 → S2',fmtFull(d.s1_to_s2)+' · '+(s2R*100).toFixed(1)+'%',['s2 to closed won','s2 to closed lost']));
+  const s2cs=s2.y+s2.h*lR;
+  svg.appendChild(cFlow(s2.x+nW,s2.y,s2cs,cL.x,cL.y+cldp,cL.y+cL.h,COL.fS2L,'S2 → CL',fmtFull(d.s2_to_cl)+' · '+(lR*100).toFixed(1)+'%',['s2 to closed lost']));
+  svg.appendChild(cFlow(s2.x+nW,s2cs,s2.y+s2.h,cW.x,cW.y,cW.y+cW.h,COL.fS2W,'S2 → CW',fmtFull(d.s2_to_cw)+' · '+(wR*100).toFixed(1)+'%',['s2 to closed won']));
+  [s1,s2,cL,cW].forEach(n=>svg.appendChild(drawNode(n)));
+  const kr=document.getElementById('kpis');kr.innerHTML='';
+  [{l:isAmt()?'Total S1 Value':'Total S1 Deals',v:fmtVal(T),s:'100% of pipeline',c:COL.s1,b:['s1 to closed lost','s2 to closed won','s2 to closed lost']},
+   {l:'Qualified (S2)',v:fmtVal(d.s1_to_s2),s:(s2R*100).toFixed(1)+'% qualification',c:COL.s2,b:['s2 to closed won','s2 to closed lost']},
+   {l:'Closed Won',v:fmtVal(d.s2_to_cw),s:(wR*100).toFixed(1)+'% of S2',c:COL.won,b:['closed won']},
+   {l:'CW % of S1',v:cwS1+'%',s:fmtVal(d.s2_to_cw)+' of '+fmtVal(T),c:'#10b981',b:['closed won']},
+   {l:'Total Lost',v:fmtVal(tCL),s:fmtVal(d.s1_to_cl)+' direct + '+fmtVal(d.s2_to_cl)+' S2',c:COL.lost,b:['closed lost']}
+  ].forEach(k=>{const cd=document.createElement('div');cd.className='kpi-card';
+    cd.innerHTML=`<div class="accent-bar" style="background:${k.c}"></div><div class="label">${k.l}</div><div class="value">${k.v}</div><div class="sub">${k.s}</div>`;
+    cd.addEventListener('click',()=>openDrawer(k.b,k.l));kr.appendChild(cd)});
+  document.getElementById('dealCount').textContent=isAmt()?fmtShort(T)+' pipeline':T.toLocaleString()+' deals';
 }
+function refreshChart(){renderSankey(getSelectedData()||{s1_to_cl:0,s1_to_s2:0,s2_to_cw:0,s2_to_cl:0})}
 
-function getSelectedData(){const p=document.getElementById('periodSelect').value,o=document.getElementById('ownerSelect').value;return(COUNTS[p]||{})[o]||null}
-function refreshChart(){const d=getSelectedData();renderSankey(d||{s1_to_cl:0,s1_to_s2:0,s2_to_cw:0,s2_to_cl:0})}
-
-function populatePeriodDropdown(){
-  const sel=document.getElementById('periodSelect');
-  const periods=Object.keys(COUNTS);
-  const qPeriods=periods.filter(p=>p.startsWith('Q')).sort((a,b)=>{
-    const[qa,ya]=a.split('_'),[qb,yb]=b.split('_');
-    return yb-ya || qb.replace('Q','')-qa.replace('Q','');
-  });
-  const otherPeriods=periods.filter(p=>!p.startsWith('Q'));
-  const sorted=[...qPeriods,...otherPeriods];
-  sel.innerHTML='';
-  sorted.forEach(p=>{
-    const opt=document.createElement('option');opt.value=p;
-    if(p==='this_month')opt.textContent='This Month';
-    else if(p==='last_month')opt.textContent='Last Month';
-    else opt.textContent=p.replace('_',' ');
-    sel.appendChild(opt);
-  });
-  if(sorted.length>0)sel.value=sorted[0];
-}
-
-function populateOwnerDropdown(){
-  const sel=document.getElementById('ownerSelect'),period=document.getElementById('periodSelect').value,pd=COUNTS[period]||{},cur=sel.value;
-  sel.innerHTML='<option value="_all">All Owners</option>';
-  ALLOWED_OWNERS.filter(name=>pd[name]).sort().forEach(name=>{
-    const d=pd[name],total=d.s1_to_cl+d.s1_to_s2;
-    const opt=document.createElement('option');opt.value=name;opt.textContent=name+' ('+fmtShort(total)+')';sel.appendChild(opt);
-  });
-  sel.value=pd[cur]?cur:'_all';
-}
-
-function setupFilters(){
-  document.getElementById('periodSelect').addEventListener('change',()=>{populateOwnerDropdown();refreshChart()});
-  document.getElementById('ownerSelect').addEventListener('change',refreshChart);
-}
-
-(async function init(){
-  const loadEl=document.getElementById('loadingState'),svgEl=document.getElementById('sankey'),legEl=document.getElementById('legend'),hintEl=document.getElementById('clickHint');
+(async function(){
+  const lE=document.getElementById('loadingState'),sE=document.getElementById('sankey'),lgE=document.getElementById('legend'),hE=document.getElementById('clickHint');
   try{
-    await fetchAllData();
-    const periods=Object.keys(COUNTS);if(periods.length===0)throw new Error("No data found");
-    loadEl.style.display='none';svgEl.style.display='block';legEl.style.display='flex';hintEl.style.display='block';
-    setupFilters();populatePeriodDropdown();populateOwnerDropdown();refreshChart();
-    document.getElementById('lastUpdated').textContent='Live from Google Sheets · loaded '+new Date().toLocaleString();
-  }catch(err){
-    loadEl.innerHTML=`<div class="error-msg"><p>Could not load data.</p><p style="margin-top:8px;font-size:12px;color:#6b7280">Publish "Sankey By Owner" and "Sankey Deals" sheets as CSV.<br>${err.message}</p></div>`;
-  }
+    await fetchAllData();const p=Object.keys(COUNT_DATA);if(!p.length)throw new Error("No data");
+    const qP=p.filter(x=>x.startsWith('Q')).sort((a,b)=>{const[qa,ya]=a.split('_'),[qb,yb]=b.split('_');return yb-ya||qb.replace('Q','')-qa.replace('Q','')});
+    SELECTED_PERIODS.add(qP[0]||p[0]);
+    lE.style.display='none';sE.style.display='block';lgE.style.display='flex';hE.style.display='block';
+    document.getElementById('ownerSelect').addEventListener('change',refreshChart);
+    populatePeriodChips();populateOwnerDropdown();refreshChart();
+    document.getElementById('lastUpdated').textContent='Live · '+new Date().toLocaleString();
+  }catch(e){lE.innerHTML=`<div class="error-msg">${e.message}</div>`}
 })();
 </script>
 </body>

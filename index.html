@@ -5,39 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pipeline Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'DM Sans',sans-serif;background:#0f1117;color:#e4e6eb;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
-  h1{font-size:36px;font-weight:700;letter-spacing:-0.5px;color:#fff;margin-bottom:8px}
-  p{font-size:15px;color:#9ca3af;margin-bottom:48px;font-weight:300}
-  .cards{display:flex;gap:28px;flex-wrap:wrap;justify-content:center}
-  .card{
-    background:#181a20;border:1px solid #2a2d36;border-radius:16px;padding:48px 44px;
-    width:320px;text-align:center;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;text-decoration:none;
-  }
+  h1{font-size:32px;font-weight:700;margin-bottom:8px;letter-spacing:-0.5px}
+  p{color:#6b7280;font-size:15px;margin-bottom:48px;font-weight:300}
+  .cards{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+  .card{background:#181a20;border:1px solid #2a2d36;border-radius:16px;padding:40px 48px;text-align:center;text-decoration:none;color:#e4e6eb;transition:all 0.25s;position:relative;overflow:hidden;min-width:260px}
   .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+  .card:first-child::before{background:#6366f1}
+  .card:last-child::before{background:#22c55e}
   .card:hover{border-color:#6366f1;transform:translateY(-4px);box-shadow:0 12px 40px rgba(99,102,241,0.15)}
-  .card .icon{font-size:48px;margin-bottom:20px}
-  .card h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:8px}
-  .card p{font-size:14px;color:#9ca3af;margin-bottom:0;font-weight:300}
-  .card-deals::before{background:#6366f1}
-  .card-amount::before{background:#22c55e}
+  .card .icon{font-size:40px;margin-bottom:16px}
+  .card h2{font-size:20px;font-weight:700;margin-bottom:6px}
+  .card span{font-size:13px;color:#6b7280;font-weight:300}
+  .note{margin-top:40px;font-size:12px;color:#4b5060;text-align:center}
 </style>
 </head>
 <body>
-  <h1>Deal Pipeline Dashboard</h1>
-  <p>Choose how you want to view the pipeline flow</p>
-  <div class="cards">
-    <a class="card card-deals" href="sankey_deals.html">
-      <div class="icon">#</div>
-      <h2>By Number of Deals</h2>
-      <p>Pipeline flow based on deal count through each stage</p>
-    </a>
-    <a class="card card-amount" href="sankey_amount.html">
-      <div class="icon">$</div>
-      <h2>By Deal Amount</h2>
-      <p>Pipeline flow based on total deal value through each stage</p>
-    </a>
-  </div>
+<h1>Pipeline Dashboard</h1>
+<p>Choose your default view — you can switch anytime with the toggle inside</p>
+<div class="cards">
+  <a class="card" href="sankey_deals.html">
+    <div class="icon">#</div>
+    <h2>By Number of Deals</h2>
+    <span>Default view: deal counts</span>
+  </a>
+  <a class="card" href="sankey_amount.html">
+    <div class="icon">$</div>
+    <h2>By Deal Amount</h2>
+    <span>Default view: dollar values</span>
+  </a>
+</div>
+<div class="note">Both pages include a toggle to switch between views instantly</div>
 </body>
 </html>
